@@ -250,7 +250,7 @@ export default {
       const newWin = window.open(routeData.href, '_blank')
       const loop = setInterval(() => {
         if (newWin.closed) {
-          // this.$refs.taskTable.getData()
+          this.getData()
           clearInterval(loop)
         }
       }, 1000)

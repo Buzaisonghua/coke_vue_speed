@@ -59,7 +59,7 @@ export function showtaskDetialsList(data) {
 }
 
 // 3.6 任务发布-任务详情列表
-export function showDetial(data) {
+export function showDetialLast(data) {
   return request({
     url: 'risen/taskDetail/showDetial.do',
     method: 'post',
@@ -103,3 +103,20 @@ export function taskFillInDetail(data) {
   })
 }
 
+// 3.13.任务发布－删除下发任务
+export function updateBsTaskPublish(data) {
+  return request({
+    url: 'risen/taskPublish/updateBsTaskPublish.do',
+    method: 'post',
+    params: data
+  })
+}
+
+// risen/taskDetail/showDetial.do
+// export function updateBsTaskPublish(data) {
+//   return request({
+//     url: 'risen/taskPublish/updateBsTaskPublish.do',
+//     method: 'post',
+//     params: data
+//   })
+// }

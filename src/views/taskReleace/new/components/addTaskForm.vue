@@ -13,7 +13,7 @@
         :wrapper-col="{flex: 'auto'}"
       >
         <a-form-model-item label="任务主题" prop="bstpTheme">
-          <a-input ref="bstpTheme" v-model="formInfo.bstpTheme" placeholder="给任务起个名字" />
+          <a-input ref="bstpTheme" v-model="formInfo.bstpTheme" :disabled="typesParent" placeholder="给任务起个名字" />
         </a-form-model-item>
         <a-form-model-item v-if="type === '1' || type === '2'" label="创建日期">
           <a-date-picker
@@ -26,6 +26,7 @@
             ref="bstpDeadline"
             v-model="formInfo.bstpDeadline"
             placeholder="请选择截止日期"
+            :disabled="typesParent"
             @change="changePicker"
           />
         </a-form-model-item>
@@ -36,31 +37,32 @@
             :max-length="2000"
             placeholder="请输入模板详细描述"
             :rows="4"
+            :disabled="typesParent"
             @change="changeBsttDesc"
           />
           <span class="fontnum">{{ fontnum }} / 2000</span>
         </a-form-model-item>
         <a-form-model-item label="任务类型" prop="bstpType">
-          <a-select v-model="formInfo.bstpType" placeholder="请选择人物类型">
+          <a-select v-model="formInfo.bstpType" :disabled="typesParent" placeholder="请选择人物类型">
             <a-select-option v-for="item in dictComboList" :key="item.value" :value="item.value">
               {{ item.text }}
             </a-select-option>
           </a-select>
         </a-form-model-item>
         <a-form-model-item label="填报单位" prop="bstpFillinDeptname">
-          <a-input v-model="formInfo.bstpFillinDeptname" placeholder="请选择填报单位" @click="setUnit('unit')" />
+          <a-input v-model="formInfo.bstpFillinDeptname" :disabled="typesParent" placeholder="请选择填报单位" @click="setUnit('unit')" />
           <span class="suffix" @click="setUnit">
             <svg-icon icon-class="add" class="icon-add" />
           </span>
         </a-form-model-item>
         <a-form-model-item label="共享范围">
-          <a-input v-model="formInfo.bstpShareUsername" placeholder="请选择共享范围" read-only @click="setUser('user')" />
+          <a-input v-model="formInfo.bstpShareUsername" :disabled="typesParent" placeholder="请选择共享范围" read-only @click="setUser('user')" />
           <span class="suffix">
             <svg-icon icon-class="add" class="icon-add" @click="setUser('user')" />
           </span>
         </a-form-model-item>
         <a-form-model-item label="选择模板">
-          <a-input v-model="formInfo.bstpTemplatename" placeholder="请选择模板" read-only @click="setTemplate" />
+          <a-input v-model="formInfo.bstpTemplatename" :disabled="typesParent" placeholder="请选择模板" read-only @click="setTemplate" />
           <span class="suffix">
             <svg-icon icon-class="add" class="icon-add" @click="setTemplate" />
           </span>
@@ -74,6 +76,7 @@
 </template>
 <script>
 import { dictCombo, doWorkFlowModelExecute } from '@/api/task'
+import { templateDetailApi } from '@/api/power'
 export default {
   components: {
     UnitTree: () => import('./unitTree'),
@@ -84,6 +87,10 @@ export default {
     type: {
       type: String,
       default: '0'
+    },
+    typesParent: {
+      type: Boolean,
+      default: () => false
     },
     detailsFormInfo: {
       type: Object,
@@ -115,6 +122,7 @@ export default {
       templateList: [],
       dictComboList: [],
       btnData: {},
+      types: undefined,
       rules: {
         bstpTheme: [
           {
@@ -212,6 +220,14 @@ export default {
       if (Object.prototype.toString.call(data) === '[object Object]') {
         this.formInfo.bstpTemplateuuid = data.bsttUuid // 模板id
         this.formInfo.bstpTemplatename = data.bsttName // 模板名称
+        if (data.formData) {
+          this.$emit('setHtml', data.formData)
+        }
+        if (this.type === '2') {
+          templateDetailApi({ bsttUuid: data.bsttUuid }).then(res => {
+            this.$emit('setHtml', res.formData)
+          })
+        }
       }
     },
     setFillinDeptname(data) {
@@ -263,16 +279,24 @@ export default {
       data['strMap.wfcmdCode'] = this.btnData.wfcmdCode
       data['strMap.wfcmdRouters'] = this.btnData.wfcmdRouters
       data['strMap.wfcmdRuleName'] = this.btnData.wfcmdRuleName
+      if (this.types === 'revise') {
+        // 代表用于编辑、
+        data.uuid = this.btnData.uuid
+      }
       doWorkFlowModelExecute(data).then(res => {
         if (res.success) {
-          this.$emit('closeNew')
+          this.$emit('closeNew', {
+            val: this.btnData.text,
+            data: res.data
+          })
         } else {
           this.$message.error('刷新重试')
         }
       })
     },
-    getSumbit(data) {
+    getSumbit(data, type) {
       this.btnData = data
+      this.types = type
       this.checkRequired()
     }
   }

@@ -23,7 +23,7 @@
           <a-button type="primary" @click="goDetalisOk">审批纪录</a-button>
         </div>
         <div class="table-header-right">
-          <a-input v-model="searchVal" type="text" placeholder="请输入关键词" @pressEnter="do_search" />
+          <a-input v-model="searchVal" type="text" placeholder="请输入关键词" @pressEnter="do_search('search')" />
           <a-button type="primary" @click="do_search('search')">查询</a-button>
           <a-button @click="do_search('reset')">重置</a-button>
           <a-button @click="get_close">关闭</a-button>
@@ -49,8 +49,16 @@
         <template slot="bstdSpstatus" slot-scope="text">
           <span :style="{color: getBstdSpstatusColor(text)}">{{ getBstdSpstatus(text) }}</span>
         </template>
-        <template slot="operation">
-          <a href="javascript:;">处理</a>
+        <template slot="operation" slot-scope="text">
+          <div>
+            <a
+              v-if="text.bstdState === '1'"
+              href="javascript:;"
+              class="get_margin_right"
+              @click="to_remind(text)"
+            >提醒</a>
+            <a @click="to_details(text)">查看详情</a>
+          </div>
         </template>
       </a-table>
       <!-- 分页 -->
@@ -127,10 +135,9 @@ export default {
         },
         {
           title: '操作',
-          width: '120px',
+          width: '200px',
           align: 'center',
           ellipsis: true,
-          // dataIndex: 'bstpUuid',
           scopedSlots: { customRender: 'operation' }
         }
       ]
@@ -156,7 +163,14 @@ export default {
     this.getData()
   },
   methods: {
-    do_search() {},
+    do_search(type) {
+      if (type === 'search') {
+        this.getData(this.searchVal)
+      } else if (type === 'reset') {
+        this.searchVal = ''
+        this.getData()
+      }
+    },
     getStatus(val) {
       switch (val) {
         case '1':
@@ -174,20 +188,44 @@ export default {
       }
     },
     getBstdSpstatusColor(val) {
-      switch (val) {
-        case '1':
-          return '#2f54eb'
-        case '2':
-          return '#ff7a45'
+      if (val === '1') {
+        return '#2f54eb'
+      } else if (val === '2') {
+        return '#ff7a45'
+      } else {
+        return '#9254de'
       }
     },
     getBstdSpstatus(val) {
-      switch (val) {
-        case '1':
-          return '通过'
-        case '2':
-          return '退回'
+      if (val === '1') {
+        return '通过'
+      } else if (val === '2') {
+        return '退回'
+      } else {
+        return '待审核'
       }
+    },
+    to_remind(text) {
+      this.$warning({
+        title: '功能开发中',
+        centered: true,
+        okText: '确定'
+      })
+    },
+    to_details(text) {
+      const routeData = this.$router.resolve({
+        path: '/form/unDetails',
+        query: {
+          uuid: text.uuid
+        }
+      })
+      const newWin = window.open(routeData.href, '_blank')
+      const loop = setInterval(() => {
+        if (newWin.closed) {
+          // this.fetchList()
+          clearInterval(loop)
+        }
+      }, 1000)
     },
     changePage(page, PageSize) {
       this._handlePage(page, PageSize)
@@ -195,14 +233,18 @@ export default {
     changePageSize(current, page) {
       this._handlePage(current, page)
     },
-    getData() {
+    getData(search) {
       this.loading = true
-      showtaskDetialsList({
+      const data = {
         bstdTaskuuid: this.bstdTaskuuid,
         bstdFilinDeptname: this.bstdFilinDeptname,
         limit: this.limit,
         start: this.start
-      }).then(res => {
+      }
+      if (search) {
+        data.text = search
+      }
+      showtaskDetialsList({ ...data }).then(res => {
         if (res.success) {
           this.loading = false
           this.dataList = res.data.datalist
@@ -279,5 +321,8 @@ export default {
 }
 /deep/.ant-pagination{
     height: auto;
+}
+.get_margin_right{
+  margin-right: 24px;
 }
 </style>

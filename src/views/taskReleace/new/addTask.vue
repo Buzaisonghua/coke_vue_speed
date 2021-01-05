@@ -57,8 +57,22 @@ export default {
     closeTem() {
       win_close()
     },
-    closeNew() {
-      save_success(() => { win_close() })
+    closeNew(text) {
+      if (text.val === '发布') {
+        save_success(() => { win_close() })
+      } else {
+        this.$confirm({
+          title: '操作成功',
+          centered: true,
+          onOk: () => {
+            this.$router.push({ path: '/form/taskDetailsUn', query: {
+              bstdTaskuuid: text.data.bstpUuid,
+              bstdFilinDeptname: text.data.bstpDeptname,
+              prop: text.data.prop2
+            }})
+          }
+        })
+      }
     },
     getSumbit(item) {
       this.$confirm({

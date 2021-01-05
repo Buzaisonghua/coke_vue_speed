@@ -65,6 +65,14 @@ const asyncRoutes = [
         meta: {
           title: '已完成任务详情'
         }
+      },
+      {
+        // 下发任务未完成任务单位详情
+        path: 'unDetails',
+        component: () => import('@/views/taskReleace/details/components/UnDetails'),
+        meta: {
+          title: '上报详情'
+        }
       }
     ]
   }

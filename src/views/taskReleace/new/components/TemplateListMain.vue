@@ -194,17 +194,6 @@ export default {
       return time.slice(0, 16)
     },
     onSelectChange(selectedRowKeys, selectedRows) {
-      // return false
-      // if (selectedRows[0].bsttSignState === '2') {
-      //   this.$confirm({
-      //     title: `改模板被管理员标记为负面清单，确定要使用该模板吗？`,
-      //     centered: true,
-      //     onCancel: () => {
-      //       return false
-      //     }
-      //   })
-      // }
-      console.log(selectedRows[0].bsttSignState === '2')
       this.selectedRowKeysArray = selectedRowKeys
       this.selectedRows = selectedRows
     },
